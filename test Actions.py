@@ -14,7 +14,7 @@ class Action:
         self.finish_time = current_time + self.action_time
 
     def is_active(self, current_time):
-        return self.start_time <= current_time < self.finish_time
+        return self.start_time <= current_time <= self.finish_time
 
     def apply(self, source, target):
         damage = random.randint(1, 10) * self.damage_modifier
@@ -25,7 +25,7 @@ class Action:
 
 class Unit():
     def __init__(self, name, maxhealth, damage, attacktime, sounds = "Default", owner = "computer",
-                 target = 0, action = "attack", action_start = 0, isalive = True, xp = 0, xptolv = 100, level = 1, actions = []):
+                 target = 0,  isalive = True, xp = 0, xptolv = 100, level = 1, actions = []):
         self.name = name
         self.maxhealth = maxhealth
         self.health = maxhealth
@@ -34,58 +34,65 @@ class Unit():
         self.sounds = sounds
         self.owner = owner
         self.target = target
-        self.action = action
-        self.action_start = action_start
-        self.action_end = self.action_start + self.attacktime
         self.isalive = isalive
         self.xp = xp
         self.xptolv = xptolv
         self.level = level
+        self.actions = [action() for action in actions]  # Instantiate new actions
+        self.current_action = None
         if(self.owner == "computer"):
             self.xp = self.maxhealth * self.damage * 100 /self.attacktime
-        self.actions = actions
     def clone(self):
         # Create a new instance with the same initial attributes
         return Unit(
             self.name,
             self.maxhealth,
-            self.maxhealth,  # Set initial health to maxhealth
             self.damage,
             self.attacktime,
             self.sounds,
             self.owner,
             self.target,
-            self.action,
-            self.action_start,
             self.isalive,
             self.xp,
             self.xptolv,
             self.level,
-            self.actions)
+            self.actions,
+            self.current_action)
 
     def perform_action(self, target, current_time):
-        if not hasattr(self, 'current_action') or not self.current_action.is_active(current_time):
+        # Check if there's a current action. If not, or if the current action is completed, choose a new one.
+        if self.current_action is None or not self.current_action.is_active(current_time):
             self.current_action = random.choice(self.actions)
             self.current_action.start(current_time)
 
-        if self.current_action.is_active(current_time):
+        # Check if the current action's finish time has been reached
+        if current_time == self.current_action.finish_time:
             self.current_action.apply(self, target)
-            combatscreen.update_action_display(
-                0 if self.name == rat.name else 1,
-                current_time,
-                self.current_action.start_time,
-                self.current_action.finish_time
-            )
+            combatscreen.update_health_display(1 if self.name == rat.name else 0, target.health, target.maxhealth)
+            self.current_action = random.choice(self.actions)
+            self.current_action.start(current_time)
+        combatscreen.update_action_display(
+            0 if self.name == rat.name else 1,
+            current_time,
+            self.current_action.start_time,
+            self.current_action.finish_time,
+            self.current_action.name
+        )
 
 
 
 # Define actions
-bite_action = Action("Bite", damage_modifier=2, action_time=100)
-scratch_action = Action("Scratch", damage_modifier=1, action_time=200)
+def create_bite_action():
+    return Action("Bite", damage_modifier=2, action_time=200)
+
+def create_scratch_action():
+    return Action("Scratch", damage_modifier=1, action_time=110)
+
 
 # Create units
-rat = Unit("Rat", 200, 10, 1, actions=[bite_action], owner = "player")
-dog = Unit("Dog", 440, 9, 2, actions=[bite_action, scratch_action])
+rat = Unit("Rat", 200, 10, 1, actions=[create_bite_action], owner="player")
+dog = Unit("Dog", 440, 9, 2, actions=[create_bite_action, create_scratch_action])
+
 
 # Simulate the fight
 combatscreen.generate_combat_window([rat, dog])
@@ -94,14 +101,13 @@ def game_time():
     pause = combatscreen.checkpause()
     if not pause:
         combattime()
-    combatscreen.combat.after(1000, game_time)  # Schedule the next check
+    combatscreen.combat.after(10, game_time)  # Schedule the next check
 
 def combattime():
     global turn
     if rat.health > 0 and dog.health > 0:
         rat.perform_action(dog, turn)
         dog.perform_action(rat, turn)
-        update_combat_screen()
         turn += 1
     else:
         display_final_result()
@@ -109,8 +115,6 @@ def combattime():
 def update_combat_screen():
     combatscreen.update_health_display(0, rat.health, rat.maxhealth)
     combatscreen.update_health_display(1, dog.health, dog.maxhealth)
-    combatscreen.update_action_display(0, turn, rat.current_action.start_time, rat.current_action.finish_time)
-    combatscreen.update_action_display(1, turn, dog.current_action.start_time, dog.current_action.finish_time)
     # Add other necessary updates (like update_action_display)
 
 def display_final_result():

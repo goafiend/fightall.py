@@ -191,7 +191,7 @@ def perksgen():
     perk[0].name = "Critical Strikes"
     perk[0].value1 = 5
     perk[0].value2 = 100
-    perk[0].description = "You have a ", perk[0].value1, "% chance to deal ", perk[0].value2, "% more damage with an attack"
+    perk[0].description = "You have a ", perk[0].value1, "% chance to deal ", perk[0].value2, "% more strength with an attack"
 
     perk[1].name = "Swiftness"
     perk[1].value1 = 10
@@ -204,11 +204,11 @@ def perksgen():
 
     perk[3].name = "destroy Armor"
     perk[3].value1 = 2
-    perk[3].description = "attacks reduce the Target's armor by ", perk[3].value1, "% of the attack damage before Armor"
+    perk[3].description = "attacks reduce the Target's armor by ", perk[3].value1, "% of the attack strength before Armor"
 
     perk[4].name = "Unreliable Damage"
     perk[4].value1 = 30
-    perk[4].description = "adds ", perk[4].value1, " percent of your minimal damage to your damage range"
+    perk[4].description = "adds ", perk[4].value1, " percent of your minimal strength to your strength range"
     
     perk[5].name = "Smart"
     perk[5].value1 = 15
@@ -243,7 +243,7 @@ def menu():
 
 
 def stats():
-    print(f"health: {character[0].hp} of {character[0].maxhp} Attackspeed: {character[0].ap1000} /1000, Armor: {character[0].armor}, damage: {character[0].mindmg} - {character[0].dmgr + character[0].mindmg}")
+    print(f"health: {character[0].hp} of {character[0].maxhp} Attackspeed: {character[0].ap1000} /1000, Armor: {character[0].armor}, strength: {character[0].mindmg} - {character[0].dmgr + character[0].mindmg}")
     print(f"Level: {character[0].lv} Experience: {character[0].xp} of {character[0].xptonextlv} Gold: {character[0].gold} ")
     print(f"Perks: {character[0].perks}")
 
@@ -274,7 +274,7 @@ def fight():
             if critroll < character[attacker].critchance:
                 hit *= 1 + (character[attacker].critdmg/100)
 
-        print(character[attacker].name, " hits ", character[defender].name, " for ", hit, "damage points")
+        print(character[attacker].name, " hits ", character[defender].name, " for ", hit, "strength points")
         character[defender].hp -= hit
         character[attacker].nturn += round(1000/character[attacker].ap1000)
 

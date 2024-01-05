@@ -193,7 +193,7 @@ def generate_unit_display(unit, turn, pos_x, pos_y, index, unit_display_width):
     y += 1
     health_label = generate_label(unit_frame, health_label_text(unit.health, unit.maxhealth), x, y, "red")
     y += 1
-    damage_label = generate_label(unit_frame, damage_label_text(unit.damage), x, y,"brown")
+    damage_label = generate_label(unit_frame, damage_label_text(unit.damage), x, y, "brown")
     y+=1
     action_label = generate_label(unit_frame, action_label_text(turn, unit.action_start, unit.action_end), x, y,"#d68910")
     y += 1

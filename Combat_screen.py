@@ -119,19 +119,22 @@ def time_label_text(runtime):
     text = f"{math.floor(runtime)} s since start"
     return text
 
-def health_label_text(health, maxhealth):
-    text = f"Health:{health}/{maxhealth}"
+def health_label_text(fighter):
+    text = f"Health:{fighter.health}/{fighter.maxhealth}"
     return text
 
 def health_bar_value(health, maxhealth):
     value = health/maxhealth * 100
     return value
 
-def action_label_text(turn, action_start, action_end):
-    text = f"Attack in {str(math.floor((action_end-turn)/10)/10)}s"
+def action_label_text(turn, action_start, action_end, action_name = "Attack"):
+    text = f"{action_name} in {str(math.floor((action_end-turn)/10)/10)}s"
     return text
 def action_bar_value(turn, action_start, action_end):
-    value = ((turn-action_start)/(action_end - action_start)) * 100
+    try:
+        value = ((turn-action_start)/(action_end - action_start)) * 100
+    except:
+        value = 0
     return value
 
 def damage_label_text(damage):
@@ -163,14 +166,14 @@ def update_turn_display(turn):
 def update_time_display(runtime):
     update_label(time_label, time_label_text(runtime))
 
-def update_health_display(fighter_index, health, maxhealth):
-    i = fighter_index
-    update_label(unit_displays[i].health_label, health_label_text(health, maxhealth))
-    update_bar(unit_displays[i].health_bar, health_bar_value(health, maxhealth))
+def update_health_display(fighter):
+    i = fighter.index
+    update_label(unit_displays[i].health_label, health_label_text(fighter))
+    update_bar(unit_displays[i].health_bar, health_bar_value(fighter.health, fighter.maxhealth))
 
-def update_action_display(fighter_index, turn, action_start, action_end):
+def update_action_display(fighter_index, turn, action_start, action_end, action_name = "Atack"):
     i = fighter_index
-    update_label(unit_displays[i].action_label, action_label_text(turn, action_start, action_end))
+    update_label(unit_displays[i].action_label, action_label_text(turn, action_start, action_end, action_name))
     update_bar(unit_displays[i].action_bar, action_bar_value(turn, action_start,action_end))
 
 def update_experience_display(fighter_index, xp, xptolv, owner):
@@ -243,9 +246,7 @@ def generate_menu(menu_pos_x, menu_pos_y, turn):
     global combatscreen_width_free
     combatscreen_width_free -= menu_width
     print(combatscreen_width_free)
-
     menu_frame.update_idletasks()
-    print_widget_size(menu_frame, "Menu_frame")
 
     global turn_label
     turn_label = generate_label(menu_frame, turn_label_text(turn), x, y)
@@ -266,20 +267,19 @@ def generate_unit_display(unit, turn, pos_x, pos_y, index, unit_display_width):
     unit_frame = tk.Frame(combat, width=unit_display_width, height=250)
     unit_frame.grid(column = x, row = y)
     unit_frame.update_idletasks()
-    print_widget_size(unit_frame, "unit_frame")
     x = 0
     y = 0
     name_label = generate_label(unit_frame, unit.name, x, y)
     y += 1
     health_bar = generate_bar(unit_frame, health_bar_value(unit.health, unit.maxhealth), x, y, "red.Horizontal.TProgressbar")
     y += 1
-    health_label = generate_label(unit_frame, health_label_text(unit.health, unit.maxhealth), x, y, "red")
+    health_label = generate_label(unit_frame, health_label_text(unit), x, y, "red")
     y += 1
-    damage_label = generate_label(unit_frame, damage_label_text(unit.damage), x, y,"brown")
+    damage_label = generate_label(unit_frame, damage_label_text(unit.strength), x, y, "brown")
     y+=1
-    action_label = generate_label(unit_frame, action_label_text(turn, unit.action_start, unit.action_end), x, y,"#d68910")
+    action_label = generate_label(unit_frame, action_label_text(turn, unit.current_action.start_time, unit.current_action.finish_time, unit.current_action.name), x, y,"#d68910")
     y += 1
-    action_bar = generate_bar(unit_frame, action_bar_value(turn, unit.action_start, unit.action_end), x, y, "yellow.Horizontal.TProgressbar")
+    action_bar = generate_bar(unit_frame, 0, x, y, "yellow.Horizontal.TProgressbar")
     y += 1
     global target
     try:
