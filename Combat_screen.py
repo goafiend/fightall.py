@@ -10,9 +10,11 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter.messagebox import showinfo
 from tkinter import *
+from tktooltip import ToolTip
 import math
 from PIL import Image, ImageTk
 import time
+
 
 # Create instance
 combat = tk.Tk()
@@ -50,7 +52,7 @@ s.configure("blue.Horizontal.TProgressbar", background = "blue")
 s.configure("green.Horizontal.TProgressbar", background = "green")
 
 class Unit_display:
-    def __init__(self, frame, posx, posy, name_label, health_bar, health_label, action_label, action_bar, target_button, experience_bar, experience_label, rows):
+    def __init__(self, frame, posx, posy, name_label, health_bar, health_label, action_label, action_label_tooltip, action_bar, target_button, experience_bar, experience_label, rows):
         self.frame = frame
         self.posx = posx
         self.posy = posy
@@ -58,6 +60,7 @@ class Unit_display:
         self.health_bar = health_bar
         self.health_label = health_label
         self.action_label = action_label
+        self.action_label_tooltip = action_label_tooltip
         self.action_bar = action_bar
         self.target_button = target_button
         self.experience_bar = experience_bar
@@ -130,6 +133,9 @@ def health_bar_value(health, maxhealth):
 def action_label_text(turn, action_start, action_end, action_name = "Attack"):
     text = f"{action_name} in {str(math.floor((action_end-turn)/10)/10)}s"
     return text
+def action_toopltip_text(action):
+    text = f"{action.name}: deals strength * {action.damage_modifier} at a base attacktime of {action.action_time} turns"
+    return text
 def action_bar_value(turn, action_start, action_end):
     try:
         value = ((turn-action_start)/(action_end - action_start)) * 100
@@ -137,8 +143,8 @@ def action_bar_value(turn, action_start, action_end):
         value = 0
     return value
 
-def damage_label_text(damage):
-    text= f"Damage: {str(damage)}"
+def damage_label_text(strength):
+    text= f"Strength: {str(strength)}"
     return text
 
 def experience_label_text(xp, xptolv, owner):
@@ -157,8 +163,8 @@ def experience_bar_value(xp, xptolv, owner):
 
 
 
-def update_damage_display(fighter_index, damage):
-    update_label(unit_displays[i].damage_label, damage_label_text(damage))
+def update_damage_display(fighter_index, strength):
+    update_label(unit_displays[i].damage_label, damage_label_text(strength))
 
 def update_turn_display(turn):
     turn_label.config(text = turn_label_text(turn))
@@ -171,10 +177,16 @@ def update_health_display(fighter):
     update_label(unit_displays[i].health_label, health_label_text(fighter))
     update_bar(unit_displays[i].health_bar, health_bar_value(fighter.health, fighter.maxhealth))
 
-def update_action_display(fighter_index, turn, action_start, action_end, action_name = "Atack"):
-    i = fighter_index
-    update_label(unit_displays[i].action_label, action_label_text(turn, action_start, action_end, action_name))
-    update_bar(unit_displays[i].action_bar, action_bar_value(turn, action_start,action_end))
+def update_action_display(fighter, turn):
+    i = fighter.index
+    update_label(unit_displays[i].action_label, action_label_text(turn,
+                                                                  fighter.current_action.start_time,
+                                                                  fighter.current_action.finish_time,
+                                                                  fighter.current_action.name))
+    update_bar(unit_displays[i].action_bar, action_bar_value(turn, fighter.current_action.start_time,
+                                                             fighter.current_action.finish_time))
+    unit_displays[i].action_label_tooltip.msg = action_toopltip_text(fighter.current_action)
+
 
 def update_experience_display(fighter_index, xp, xptolv, owner):
     i = fighter_index
@@ -260,7 +272,6 @@ def generate_menu(menu_pos_x, menu_pos_y, turn):
     pause_continue_button = tk.Button(menu_frame, text="Fight", command=pause_continue)
     pause_continue_button.grid(column = x, row = y)
     x += 1
-
 def generate_unit_display(unit, turn, pos_x, pos_y, index, unit_display_width):
     x = pos_x
     y = pos_y
@@ -278,6 +289,9 @@ def generate_unit_display(unit, turn, pos_x, pos_y, index, unit_display_width):
     damage_label = generate_label(unit_frame, damage_label_text(unit.strength), x, y, "brown")
     y+=1
     action_label = generate_label(unit_frame, action_label_text(turn, unit.current_action.start_time, unit.current_action.finish_time, unit.current_action.name), x, y,"#d68910")
+    action_label_tooltip = ToolTip(action_label, msg= action_toopltip_text(unit.current_action), delay=0,
+            parent_kwargs={"bg": "black", "padx": 5, "pady": 5},
+            fg="black", bg="white", padx=10, pady=10)
     y += 1
     action_bar = generate_bar(unit_frame, 0, x, y, "yellow.Horizontal.TProgressbar")
     y += 1
@@ -294,5 +308,5 @@ def generate_unit_display(unit, turn, pos_x, pos_y, index, unit_display_width):
     experience_bar = generate_bar(unit_frame, 0, x, y,"blue.Horizontal.TProgressbar")
     y += 1
     experience_label = generate_label(unit_frame, experience_label_text(unit.xp,unit.xptolv, unit.owner), x, y)
-    unit_displays.append(Unit_display(unit_frame, pos_x, pos_y, name_label, health_bar, health_label, action_label, action_bar, target_button, experience_bar, experience_label, y-pos_y))
+    unit_displays.append(Unit_display(unit_frame, pos_x, pos_y, name_label, health_bar, health_label, action_label, action_label_tooltip, action_bar, target_button, experience_bar, experience_label, y-pos_y))
 

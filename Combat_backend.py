@@ -1,5 +1,5 @@
 #TODOS:
-# Actions
+# Actions improving
 # organise Code better
 import tkinter as tk
 from tkinter import ttk
@@ -34,6 +34,9 @@ class Action:
 
 def create_attack_action():
     return Action("Attack", damage_modifier=1, action_time=100)
+
+def create_jab_action():
+    return Action("Jab", damage_modifier = 0.25, action_time = 30)
 
 def create_slash_action():
     return Action("Slash", damage_modifier=2, action_time=170)
@@ -135,7 +138,7 @@ def combatevent(fighter, turn):
         sound(fighters[defender_number].sounds, "death")
         defender.isalive = False
         defender.action = "none"
-        combatscreen.update_action_display(defender_number, turn, 1, 3)
+        combatscreen.update_action_display(defender, turn)
         defender.health = 0
         try:
             combatscreen.cl.log(f"{defender.name} Died")
@@ -177,13 +180,7 @@ def combattime():
         if fighter.isalive == True:
             if fighter.current_action.finish_time == turn:
                 combatevent(fighter, turn)
-            combatscreen.update_action_display(
-                fighter.index,
-                turn,
-                fighter.current_action.start_time,
-                fighter.current_action.finish_time,
-                fighter.current_action.name
-            )
+            combatscreen.update_action_display(fighter, turn)
     i = 0
     combatscreen.update_turn_display(turn)
     turn = turn + 1
