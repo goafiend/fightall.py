@@ -125,59 +125,73 @@ turn = 0
 global pause_combat
 pause_combat = True
 
-
+# def delete_unit(unit):
+#     print(f"{fighters=}")
+#     del combatscreen.unit_displays[unit.index]
+#     del fighters[unit.index]
+#     del unit
+#     print (f"{fighters =}")
+def kill(attacker, defender, turn):
+    sound(defender.sounds, "death")
+    defender.isalive = False
+    defender.action = "none"
+    combatscreen.update_action_display(defender, turn)
+    defender.health = 0
+    try:
+        combatscreen.cl.log(f"{defender.name} Died")
+    except:
+        print("couldnt print death message to combatlog")
+    combatscreen.update_health_display(defender)
+    print(fighters)
+    # try:
+    #     combatscreen.combat.after(20000, lambda: delete_unit(defender))
+    # except:
+    #     print("couldnt delete unit")
+    if(fighter.owner == "player"):
+        fighter.xp = fighter.xp + defender.xp
+        combatscreen.update_experience_display(fighter.index, fighter.xp, fighter.xptolv, fighter.owner)
+        try:
+            combatscreen.cl.log(f"{fighter.name} gained {defender.xp} experience")
+        except:
+            print("couldnt print experience gained to combat log")
+        while(fighter.xp > fighter.xptolv):
+            fighter.xp = fighter.xp - fighter.xptolv
+            fighter.level = fighter.level + 1
+            fighter.attacktime = math.floor(fighter.attack_time * 0.9)
+            fighter.xptolv = fighter.xptolv + (100 * fighter.level)
+            try:
+                combatscreen.cl.log(f"{fighter.name} is now level {fighter.level}")
+            except:
+                print("coulnt print levelup message to combat log")
+            try:
+                combatscreen.combat.after(250,sound(fighter.sounds, "levelup"))
+            except:
+                print("couldnt play levelup sound")
+            try:
+                combatscreen.update_experience_display(num, fighter.xp, fighter.xptolv, fighter.owner )
+            except:
+                print("experience display couldnt be updated")
 def combatevent(fighter, turn):
     if fighter.owner == "player":
         fighter.target_index = combatscreen.checktarget()
     defender_number = fighter.target_index
     defender = fighters[defender_number]
+    print(f"{fighter.index =}, {defender.index =}")
     fighter.perform_action(defender, turn)
     if defender.isalive == False:
         sound("Default", "hit dead one")
     if defender.health <= 0 and defender.isalive == True:
-        sound(fighters[defender_number].sounds, "death")
-        defender.isalive = False
-        defender.action = "none"
-        combatscreen.update_action_display(defender, turn)
-        defender.health = 0
-        try:
-            combatscreen.cl.log(f"{defender.name} Died")
-        except:
-            print("couldnt print death message to combatlog")
-        combatscreen.update_health_display(defender)
-        if(fighter.owner == "player"):
-            fighter.xp = fighter.xp + defender.xp
-            combatscreen.update_experience_display(fighter.index, fighter.xp, fighter.xptolv, fighter.owner)
-            try:
-                combatscreen.cl.log(f"{fighter.name} gained {defender.xp} experience")
-            except:
-                print("couldnt print experience gained to combat log")
-            while(fighter.xp > fighter.xptolv):
-                fighter.xp = fighter.xp - fighter.xptolv
-                fighter.level = fighter.level + 1
-                fighter.attacktime = math.floor(fighter.attack_time * 0.9)
-                fighter.xptolv = fighter.xptolv + (100 * fighter.level)
-                try:
-                    combatscreen.cl.log(f"{fighter.name} is now level {fighter.level}")
-                except:
-                    print("coulnt print levelup message to combat log")
-                try:
-                    combatscreen.combat.after(250,sound(fighter.sounds, "levelup"))
-                except:
-                    print("couldnt play levelup sound")
-                try:
-                    combatscreen.update_experience_display(num, fighter.xp, fighter.xptolv, fighter.owner )
-                except:
-                    print("experience display couldnt be updated")
+        kill(fighter, defender, turn)
 
-Print("testestest")
+
+
 def combattime():
     combat = True
     global pause_combat
     global turn
 
     for fighter in fighters:
-        if fighter.isalive == True:
+        if fighter.isalive:
             if fighter.current_action.finish_time == turn:
                 combatevent(fighter, turn)
             combatscreen.update_action_display(fighter, turn)
