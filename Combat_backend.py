@@ -1,6 +1,5 @@
 #TODOS:
 # Actions
-# Playing sounds simultaneously
 # organise Code better
 import tkinter as tk
 from tkinter import ttk
@@ -108,6 +107,8 @@ fighters[0].target_index = 1
 fighters.append(Luki)
 fighters.append(Andi)
 fighters.append(swordsman)
+fighters.append(pig)
+fighters[4].target_index = 2
 
 
 i = 0

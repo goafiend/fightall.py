@@ -1,16 +1,19 @@
 import pygame
 pygame.mixer.init()# initialise the pygame
 
-def play(filename):
-    pygame.mixer.music.load(filename)
-    pygame.mixer.music.play(loops=0)
+pygame.mixer.set_num_channels(5)
+
+def play(sound):
+    sound.play()
+
 
 def play_sound(library, event):
     try:
-        play(f"sounds/{library}/{library} {event}.wav")
+        sound = pygame.mixer.Sound(f"sounds/{library}/{library} {event}.wav")
+        play(sound)
     except:
         try:
-            play(f"sounds/Default/Default {event}.wav")
+            sound = pygame.mixer.Sound(f"sounds/Default/Default {event}.wav")
+            play(sound)
         except:
             print(f"sound not found: {library} {event}")
-
