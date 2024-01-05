@@ -170,7 +170,7 @@ def combatevent(fighter, turn):
                 except:
                     print("experience display couldnt be updated")
 
-
+Print("testest")
 def combattime():
     combat = True
     global pause_combat
